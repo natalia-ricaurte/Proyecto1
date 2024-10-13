@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificación de opiniones sobre ODS</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Gaegu', cursive;
+            background-color: rgb(183, 228, 228);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: lightseagreen; /* Azul primario */
+            color: white;
+            padding: 20px;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            background-color: lightseagreen;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-family: 'Gaegu', cursive;
+        }
+        main {
+            padding: 20px;
+        }
+        .descripcion {
+            margin: 10px 0;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        .upload-section {
+            background-color: #e0f7fa; /* Color de fondo de la sección de subir archivo */
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+        }
+        input[type="submit"] {
+            background-color: lightseagreen !important;; /* Color verde para el botón */
+            color: black !important;
+            border: none;
+            border-radius: 20px; /* Forma del botón más redondeada */
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s; /* Añadir efecto al botón */
+        }
+        input[type="submit"]:hover {
+            background-color: darkgreen; /* Color al pasar el mouse */
+            transform: scale(1.05); /* Efecto de escala al pasar el mouse */
+        }
+      
+        
+        .results {
+            background-color: #f0f0f0; /* Fondo claro */
+            border: 1px solid #b0bec5;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: inline-block;
+            width: 80%;
+            max-width: 600px;
+            text-align: left;
+        }
+        .error {
+            color: red;
+        }
+        .words {
+            list-style: none;
+            padding: 0;
+        }
+        .words li {
+            margin: 5px 0;
+        }
+        /* Estilos para los ODS */
+        .ods-3 .word {
+            background-color: #4CAF50; /* Verde para ODS 3 */
+            color: white;
+        }
+        .ods-4 .word {
+            background-color: #F44336; /* Rojo para ODS 4 */
+            color: white;
+        }
+        .ods-5 .word {
+            background-color: #FF9800; /* Naranja para ODS 5 */
+            color: white;
+        }
+        .ods-3, .ods-4, .ods-5 {
+            background-color: white !important; 
+        }
+        .word {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+           
+        }
+
+        /* Tarjetas dinámicas para los resultados */
+        .metric {
+            display: inline-block;
+            width: 180px;
+            padding: 20px;
+            margin: 10px;
+            background-color: #7db9ee;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            transition: transform 0.3s;
+            animation: fadeInUp 1s ease;
+        }
+        .metric:hover {
+            transform: scale(1.05);
+            background-color: #7aa1ce;
+        }
+
+        .metric-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Animación */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error {
+            color: red;
+        }
+
+        /* Nueva sección "Modelos de reentrenamiento" */
+        .retraining-models {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .retraining-models h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #1e88e5;
+        }
+
+        .model-blocks {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .model-block {
+            background-color: lightseagreen;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 150px;
+            transition: background-color 0.3s, transform 0.3s;
+            cursor: pointer;
+        }
+
+        .model-block:hover {
+            background-color: lightseagreen;
+            transform: scale(1.05);
+        }
+        
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Clasificación de opiniones sobre ODS</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Predecir</a></li>
+                <li><a href="/train">Entrenar</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+
+         <!-- Nueva sección de Modelos de reentrenamiento -->
+         <div class="retraining-models">
+            <h2>Modelos de Reentrenamiento</h2>
+            <div class="model-blocks">
+                <div class="model-block">Utilizando Random Forest, entrenar el modelo juntando los datos antiguos con aquellos nuevos que eran ingresados por los usuarios.</div>
+                <div class="model-block">Utilizando Random Forest, entrenar el modelo únicamente usando los datos nuevos ingresados por el usuario. </div>
+                <div class="model-block">Utilizando Random Forest, sin embargo, partiendo de cierta cantidad de datos que ya han sido entrenados previamente, junto con los datos nuevos.</div>
+            </div>
+        </div>
+        
+        <p class="descripcion">En esta sección puede entrenar el modelo nuevamente con los nuevos datos de su elección (se acepta formato .csv o .xlsx).</p>
+        
+        <!-- Sección de subida de archivo con nuevo color -->
+        <!-- Sección de subida de archivo -->
+<div class="upload-section">
+    <form action="/retrain" method="POST" enctype="multipart/form-data">
+        <label for="train_data">Datos de entrenamiento:</label>
+        <input type="file" id="train_data" name="train_data">
+        <input type="submit" value="Entrenar" class="custom-button">
+    </form>
+</div>
+
+
+        {% if metricas %}
+        <div class="results">
+            <h2>Resultados del reentrenamiento:</h2>
+            <div class="metric">
+                <div class="metric-title">Precisión</div>
+                <div class="metric-value">{{ metricas.accuracy }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-title">Sensibilidad</div>
+                <div class="metric-value">{{ metricas.recall }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-title">Precisión</div>
+                <div class="metric-value">{{ metricas.precision }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-title">Puntuación F1</div>
+                <div class="metric-value">{{ metricas.f1_score }}</div>
+            </div>
+        </div>
+         
+        {% endif %}
+
+        {% if palabras_frecuentes %}
+        <div class="results">
+            <h3>Palabras más frecuentes por ODS:</h3>
+            <ul class="words">
+                {% for ods, palabras in palabras_frecuentes.items() %}
+                <li class="ods-{{ ods }}">
+                    <strong>ODS {{ ods }}:</strong>
+                    {% for palabra in palabras %}
+                        <span class="word">{{ palabra[0] }}</span>
+                    {% endfor %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+    </main>
+</body>
+</html>
